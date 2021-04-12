@@ -1,0 +1,30 @@
+apiVersion: v1
+data:
+  teleport.yaml: |
+    teleport:
+      auth_token: "hello"
+      auth_servers:
+      - 192.168.5.30:3025
+
+    auth_service:
+      enabled: no
+
+    ssh_service:
+      enabled: yes
+      pam:
+        enabled: true
+        service_name: "teleport"
+      labels:
+        node-type: kubernetes-worker
+        running-on: host
+      commands:
+      - name: kubelet-labels
+        command: ['/bin/bash', '/usr/local/bin/get-kubelet-labels.sh']
+        period: 15m0s
+
+    proxy_service:
+      enabled: no
+kind: ConfigMap
+metadata:
+  name: teleport-daemonset-config
+  namespace: default

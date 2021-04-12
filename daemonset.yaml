@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: teleport-node
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: teleport-node
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: teleport-node
+    spec:
+      containers:
+      - args:
+        - /bin/bash
+        - /usr/local/bin/teleport-scripts/install-teleport-systemd.sh
+        command:
+        - /usr/bin/dumb-init
+        image: quay.io/gravitational/teleport-ent:5.2.1
+        imagePullPolicy: IfNotPresent
+        name: teleport-systemd-installer
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/teleport
+          name: teleport-daemonset-config
+          readOnly: true
+        - mountPath: /usr/local/bin/teleport-scripts
+          name: teleport-bootstrap-scripts
+        - mountPath: /host/etc/teleport
+          name: teleport-daemonset-host-config
+        - mountPath: /etc/systemd/system
+          name: teleport-daemonset-host-etc-systemd-system
+        - mountPath: /run
+          name: teleport-daemonset-host-run
+        - mountPath: /host/var/lib/teleport
+          name: teleport-daemonset-host-storage
+        - mountPath: /sys/fs/cgroup
+          name: teleport-daemonset-host-sys-fs-cgroup
+          readOnly: true
+        - mountPath: /sys/fs/cgroup/systemd
+          name: teleport-daemonset-host-sys-fs-cgroup-systemd
+        - mountPath: /host/usr/local/bin
+          name: teleport-daemonset-host-usr-local-bin
+        - mountPath: /var/log/teleport.log
+          name: teleport-daemonset-host-var-log-teleportlog
+          readOnly: true
+        - mountPath: /var/run/dbus
+          name: teleport-daemonset-host-var-run-dbus
+        - mountPath: /etc/pam.d/teleport
+          name: teleport-pam
+      dnsPolicy: ClusterFirst
+      hostPID: true
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: teleport-daemonset-config
+        name: teleport-daemonset-config
+      - configMap:
+          defaultMode: 420
+          name: teleport-bootstrap-scripts
+        name: teleport-bootstrap-scripts
+      - hostPath:
+          path: /etc/systemd/system
+          type: Directory
+        name: teleport-daemonset-host-etc-systemd-system
+      - hostPath:
+          path: /etc/teleport
+          type: DirectoryOrCreate
+        name: teleport-daemonset-host-config
+      - hostPath:
+          path: /run
+          type: Directory
+        name: teleport-daemonset-host-run
+      - hostPath:
+          path: /sys/fs/cgroup
+          type: Directory
+        name: teleport-daemonset-host-sys-fs-cgroup
+      - hostPath:
+          path: /sys/fs/cgroup/systemd
+          type: Directory
+        name: teleport-daemonset-host-sys-fs-cgroup-systemd
+      - hostPath:
+          path: /usr/local/bin
+          type: DirectoryOrCreate
+        name: teleport-daemonset-host-usr-local-bin
+      - hostPath:
+          path: /var/lib/teleport
+          type: DirectoryOrCreate
+        name: teleport-daemonset-host-storage
+      - hostPath:
+          path: /var/log/teleport.log
+          type: FileOrCreate
+        name: teleport-daemonset-host-var-log-teleportlog
+      - hostPath:
+          path: /var/run/dbus
+          type: ""
+        name: teleport-daemonset-host-var-run-dbus
+      - hostPath:
+          path: /etc/pam.d/teleport
+          type: FileOrCreate
+        name: teleport-pam
