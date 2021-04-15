@@ -1,0 +1,24 @@
+teleport.yaml:
+  teleport:
+    auth_token: "$TELEPORT_TOKEN"
+    auth_servers:
+    - "$TELEPORT_AUTH_ENDPOINT":3025
+
+  auth_service:
+    enabled: no
+
+  ssh_service:
+    enabled: yes
+    pam:
+      enabled: true
+      service_name: "teleport"
+    labels:
+      node-type: kubernetes-worker
+      running-on: host
+    commands:
+    - name: kubelet-labels
+      command: ['/bin/bash', '/usr/local/bin/get-kubelet-labels.sh']
+      period: 15m0s
+
+  proxy_service:
+    enabled: no

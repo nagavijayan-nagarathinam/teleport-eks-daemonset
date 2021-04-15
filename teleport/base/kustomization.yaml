@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- teleport-daemonset.yaml
+configMapGenerator:
+  - name: teleport-bootstrap-scripts
+    files:
+      - configmap-teleport-script.yaml
+  - name: teleport-daemonset-config
+    envs:
+    - teleport.env
+    files:
+      - configmap-teleport-config.yaml
